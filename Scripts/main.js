@@ -4,6 +4,7 @@ var MINESWEEPER = (function(MINESWEEPER) {
 		newGameButton = document.getElementById("new-game-button"),
 		solveButton = document.getElementById("solve-button"),
 		constantSolvingButton = document.getElementById("constant-solving-toggle"),
+		resetStatsButton = document.getElementById("reset-stats-button"),
 		winPercentageField = document.getElementById("win-percentage"),
 		timeField = document.getElementById("time"),
 		timeTakenField = document.getElementById("time-taken"),
@@ -13,14 +14,16 @@ var MINESWEEPER = (function(MINESWEEPER) {
 		gameCount = 1,
 		winCount = 0,
 		currentTime = performance.now(),
-		lastTime;
+		lastTime,
+		startTime = performance.now();
 
 	function setup() {
 		board = MINESWEEPER.createBoardDisplay(canvas, 30, 16, 99);
 	}
 
 	function update() {
-		timeField.innerHTML = "Time: " + (performance.now() / 1000);
+		var time = ((performance.now() - startTime) / 1000);
+		timeField.innerHTML = "Time: " + roundFloat(time, 2);
 		setTimeout(update, 1000 / 60);
 	}
 
@@ -94,11 +97,11 @@ var MINESWEEPER = (function(MINESWEEPER) {
 	function newGame() {
 		if (board.victoryState()) {
 			winCount++;
-			winPercentageField.innerHTML = "Win Percentage: " + (Math.round((winCount / gameCount) * 100000) / 1000);
+			winPercentageField.innerHTML = "Win Percentage: " + roundFloat(winCount / gameCount, 2);
 		}
 		lastTime = currentTime;
 		currentTime = performance.now();
-		timeTakenField.innerHTML = "Time Taken Last Game: " + ((currentTime - lastTime) / 1000);
+		timeTakenField.innerHTML = "Time Taken Last Game: " + roundFloat((currentTime - lastTime) / 1000, 2);
 		board = MINESWEEPER.createBoardDisplay(canvas, 30, 16, 99);
 		gamesPlayedField.innerHTML = "Games Played: " + gameCount;
 		gameCount++;
@@ -135,7 +138,19 @@ var MINESWEEPER = (function(MINESWEEPER) {
 		}
 	}
 
+	resetStatsButton.onclick = function(){
+		winCount = 0;
+		gameCount = 0;
+		currentTime = performance.now();
+		lastTime = currentTime;
+		startTime = currentTime;
+	};
+
 	setup();
 	update();
 	render();
+
+	function roundFloat(value, decimalPlaces){
+		return Math.round(value * Math.pow(10, decimalPlaces)) / Math.pow(10, decimalPlaces);
+	}
 }(MINESWEEPER || {}));
