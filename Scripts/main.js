@@ -13,24 +13,25 @@ var MINESWEEPER = (function(MINESWEEPER) {
         solvingContinuously = false,
         gameCount = 1,
         winCount = 0,
-        currentTime = performance.now(),
+        currentTime = window.performance.now(),
         lastTime,
-        startTime = performance.now();
+        startTime = window.performance.now(),
+        previousFrameTime = 0,
+        accumulatedLag = 0,
+        UPS = 30,
+        FRAME_DURATION = 1000 / UPS;
 
     function setup() {
         board = MINESWEEPER.createBoardDisplay(canvas, 30, 16, 99);
     }
 
-    var previousTime,
-        accumulatedLag,
-        UPS = 30,
-        FRAME_DURATION = 1000 / UPS;
     function loop() {
         requestAnimationFrame(() => { loop(); });
 
         var now = window.performance.now();
-        var delta = now - previousTime;
+        var delta = now - previousFrameTime;
 
+        //Handle extreme lag
         if (delta > 1000) {
             delta = FRAME_DURATION;
         }
@@ -55,14 +56,20 @@ var MINESWEEPER = (function(MINESWEEPER) {
 
         // set the current time to be used as the previous
         // for the next frame
-        previousTime = now;
+        previousFrameTime = now;
     }
 
     function update() {
-		var time = ((performance.now() - startTime) / 1000);
+		var time = ((window.performance.now() - startTime) / 1000);
 		timeField.innerHTML = "Time: " + roundFloat(time, 2);
-		//setTimeout(update, 1000 / 30);
-	}
+
+		if (solvingContinuously)
+		{
+		    if (!solveTillEnd()) {
+		        newGame();
+		    }
+        }
+    }
 
 	function render() {
 		var context = canvas.getContext("2d");
@@ -151,8 +158,8 @@ var MINESWEEPER = (function(MINESWEEPER) {
 	function solveTillEnd() {
 		if (!board.isGameFinished()) {
 			if(board.runSolverOneStep()) {
-				setTimeout(solveTillEnd, 5);
-				return true;
+                solveTillEnd();
+                return true;
 			} else {
 				return false;
 			}
@@ -162,18 +169,8 @@ var MINESWEEPER = (function(MINESWEEPER) {
 	}
 
 	constantSolvingButton.onclick = function() {
-		solvingContinuously = !solvingContinuously;
-		solveContinuously();
+		solvingContinuously = true;
 	};
-
-	function solveContinuously() {
-		if (solvingContinuously) {
-			if(!solveTillEnd()) {
-				newGame();
-			}
-			setTimeout(solveContinuously, 5);
-		}
-	}
 
 	resetStatsButton.onclick = function(){
 		winCount = 0;
@@ -184,8 +181,7 @@ var MINESWEEPER = (function(MINESWEEPER) {
 	};
 
 	setup();
-	update();
-	render();
+	loop();
 
 	function roundFloat(value, decimalPlaces){
 		return Math.round(value * Math.pow(10, decimalPlaces)) / Math.pow(10, decimalPlaces);
