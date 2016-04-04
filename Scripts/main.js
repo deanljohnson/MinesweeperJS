@@ -1,30 +1,67 @@
 var MINESWEEPER = (function(MINESWEEPER) {
-	"use strict";
-	var canvas = document.getElementById("main-canvas"),
-		newGameButton = document.getElementById("new-game-button"),
-		solveButton = document.getElementById("solve-button"),
-		constantSolvingButton = document.getElementById("constant-solving-toggle"),
-		resetStatsButton = document.getElementById("reset-stats-button"),
-		winPercentageField = document.getElementById("win-percentage"),
-		timeField = document.getElementById("time"),
-		timeTakenField = document.getElementById("time-taken"),
-		gamesPlayedField = document.getElementById("games-played"),
-		board,
-		solvingContinuously = false,
-		gameCount = 1,
-		winCount = 0,
-		currentTime = performance.now(),
-		lastTime,
-		startTime = performance.now();
+    "use strict";
+    var canvas = document.getElementById("main-canvas"),
+        newGameButton = document.getElementById("new-game-button"),
+        solveButton = document.getElementById("solve-button"),
+        constantSolvingButton = document.getElementById("constant-solving-toggle"),
+        resetStatsButton = document.getElementById("reset-stats-button"),
+        winPercentageField = document.getElementById("win-percentage"),
+        timeField = document.getElementById("time"),
+        timeTakenField = document.getElementById("time-taken"),
+        gamesPlayedField = document.getElementById("games-played"),
+        board,
+        solvingContinuously = false,
+        gameCount = 1,
+        winCount = 0,
+        currentTime = performance.now(),
+        lastTime,
+        startTime = performance.now();
 
-	function setup() {
-		board = MINESWEEPER.createBoardDisplay(canvas, 30, 16, 99);
-	}
+    function setup() {
+        board = MINESWEEPER.createBoardDisplay(canvas, 30, 16, 99);
+    }
 
-	function update() {
+    var previousTime,
+        accumulatedLag,
+        UPS = 30,
+        FRAME_DURATION = 1000 / UPS;
+    function loop() {
+        requestAnimationFrame(() => { loop(); });
+
+        var now = window.performance.now();
+        var delta = now - previousTime;
+
+        if (delta > 1000) {
+            delta = FRAME_DURATION;
+        }
+        accumulatedLag += delta;
+
+        // perform an update if the lag counter exceeds or is equal to
+        // the frame duration.
+        // this means we are updating at a Fixed time-step.
+        if (accumulatedLag >= FRAME_DURATION) {
+            // TODO: capture prev position
+
+            update();
+            accumulatedLag -= FRAME_DURATION;
+        }
+        // calculate the lag offset, this tells us how far we are
+        // into the next frame
+        var lagOffset = accumulatedLag / FRAME_DURATION;
+
+        // display the sprites passing in the lagOffset to interpolate the
+        // sprites positions
+        render();
+
+        // set the current time to be used as the previous
+        // for the next frame
+        previousTime = now;
+    }
+
+    function update() {
 		var time = ((performance.now() - startTime) / 1000);
 		timeField.innerHTML = "Time: " + roundFloat(time, 2);
-		setTimeout(update, 1000 / 30);
+		//setTimeout(update, 1000 / 30);
 	}
 
 	function render() {
@@ -34,7 +71,7 @@ var MINESWEEPER = (function(MINESWEEPER) {
 
 		board.render(context);
 
-		requestAnimationFrame(render);
+		//requestAnimationFrame(render);
 	}
 
 	function getCursorPosition(canvas, event) {
