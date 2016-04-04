@@ -24,7 +24,7 @@ var MINESWEEPER = (function(MINESWEEPER) {
 	function update() {
 		var time = ((performance.now() - startTime) / 1000);
 		timeField.innerHTML = "Time: " + roundFloat(time, 2);
-		setTimeout(update, 1000 / 60);
+		setTimeout(update, 1000 / 30);
 	}
 
 	function render() {
