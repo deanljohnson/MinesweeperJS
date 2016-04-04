@@ -169,7 +169,7 @@ var MINESWEEPER = (function(MINESWEEPER) {
 	}
 
 	constantSolvingButton.onclick = function() {
-		solvingContinuously = true;
+		solvingContinuously = !solvingContinuously;
 	};
 
 	resetStatsButton.onclick = function(){
